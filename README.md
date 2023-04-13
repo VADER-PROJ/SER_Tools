@@ -2,20 +2,6 @@
 
 This repository contains the **Speech Emotion Recognition (SER)** tools developed during the development of Mário Silva's thesis. It includes SER machine learning models and an audio pipeline to process audio in online or offline time to be used for SER classifications.
 
-## Configurations
-
-In addition to manually passing the parameters to both classes, there is also an option to pass a JSON configuration file. An example of this config is present in the file `config.json`:
-
-    "MODELS_DIR": "models" -> Path for the directory where the machine learning models are stored
-    "TRADITIONAL_SER": true -> Type of SER model to utilize
-    "STRATIFIED": true -> Use SER models resulting from the stratification study
-    "FORMAT": "float32" -> Data type of the audio samples fed to the pipeline
-    "SAMPLE_RATE": 16000 -> Sample rate of the audio fed to the pipeline
-    "NO_CHANNELS": 1 -> Number of audio channels of the audio fed to the pipeline (1 for mono, 2 for stereo)
-    "MIN_CONFIDENCE": 0.6 -> Minimum confidence level for voice activity detection
-    "MIN_DURATION": 1 -> Minimum duration of speech segments to be classified (in seconds)
-    "MAX_DURATION":  -> Maximum duration of speech segments to be classified (in seconds)
-
 ## SER Models
 
 The developed models are available through the `SERClassifier` class in the file `ser_classifier.py`. It allows choosing the model developed and trained on the IEMOCAP dataset using a **traditional feature-based SER** and another using a **deep learning-based SER** approach.
@@ -103,3 +89,18 @@ Output:
 
     Emotions Probabilities: {'anger': 0.2753906, 'happiness': 0.394531, 'sadness': 0.109375, 'neutral': 0.2207031}
     Recognized emotion: happiness
+
+
+## Configurations
+
+In addition to manually passing the parameters to both classes, there is also an option to pass a JSON configuration file. An example of this config is present in the file `config.json`:
+
+    "MODELS_DIR": "models" -> Path for the directory where the machine learning models are stored
+    "TRADITIONAL_SER": true -> Type of SER model to utilize
+    "STRATIFIED": true -> Use SER models resulting from the stratification study
+    "FORMAT": "float32" -> Data type of the audio samples fed to the pipeline
+    "SAMPLE_RATE": 16000 -> Sample rate of the audio fed to the pipeline
+    "NO_CHANNELS": 1 -> Number of audio channels of the audio fed to the pipeline (1 for mono, 2 for stereo)
+    "MIN_CONFIDENCE": 0.6 -> Minimum confidence level for voice activity detection
+    "MIN_DURATION": 1 -> Minimum duration of speech segments to be classified (in seconds)
+    "MAX_DURATION": 6 -> Maximum duration of speech segments to be classified (in seconds)
