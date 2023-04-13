@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>SER Models - Speech Emotion Recognition Tools</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "SER Models";
+        var mkdocs_page_input_path = "classifier.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Speech Emotion Recognition Tools
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">SER Models</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#usage-examples">Usage Examples</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../pipeline/">SER Pipeline</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../config/">Configurations</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Speech Emotion Recognition Tools</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+      <li>SER Models</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="ser-models">SER Models</h1>
+<p>The developed models are available through the <code>SERClassifier</code> class in the file <code>ser_classifier.py</code>. It allows choosing the model developed and trained on the IEMOCAP dataset using a <strong>traditional feature-based SER</strong> and another using a <strong>deep learning-based SER</strong> approach.</p>
+<p>This class has built-in methods that allow users to predict emotions from an audio file or directly from an audio vector. The audio must have <strong>16000 Hz</strong> frequency and be <strong>mono</strong> channel. The class also <strong>preprocesses</strong> the audio by <strong>reducing the noise</strong> and <strong>trimming silence</strong> at the beginning and end of the audio before extracting features for classification.</p>
+<p>The traditional model constitutes an AdaBoost with Random Forests as the base estimator and utilizes manually extracted audio features from the audio signals to make emotional predictions.</p>
+<p>The deep learning model utilizes transfer learning techniques, using a pre-trained ResNet-50 on the ImageNet dataset. This classifier utilizes the image of the audio spectrogram to make classifications.</p>
+<p>Additionally, there is the <code>STRATIFIED</code> argument of the <code>SERClassifier</code> class, which allows selecting the usage of these models trained on limited data that achieved better results, based on a set of conditions that resulted from a study of the training dataset limitations.</p>
+<h2 id="usage-examples">Usage Examples</h2>
+<p>Here is an example of how to use the classifier class:</p>
+<pre><code>import librosa
+from ser_classifier import SERClassifier
+
+models_dir, audio_file = "path_to_ml_models_dir", "path_to_audio_file"
+
+trad_model = SERClassifier(config_file='config.json')
+
+print("Using the audio file path:")
+print(trad_model.predict(audio_file, is_file=True, return_proba=True))
+print(trad_model.predict(audio_file, is_file=True, return_proba=False))
+
+y, sr = librosa.load(audio_file, sr=16000)
+print("\nUsing the audio signal vector:")
+print(trad_model.predict(y, is_file=False, return_proba=True))
+print(trad_model.predict(y, is_file=False, return_proba=False))
+</code></pre>
+<p>Output:</p>
+<pre><code>Using the audio file path:
+Probabilities: {'anger': 0.02343750, 'happiness': 0.08203125, 'sadness': 0.08593749, 'neutral': 0.80859375}
+Emotion Label: neutral
+
+Using the audio signal vector:
+Probabilities: {'anger': 0.02343750, 'happiness': 0.08203125, 'sadness': 0.08593749, 'neutral': 0.80859375}
+Emotion Label: neutral
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href=".." class="btn btn-neutral float-left" title="Home"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../pipeline/" class="btn btn-neutral float-right" title="SER Pipeline">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href=".." style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../pipeline/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
