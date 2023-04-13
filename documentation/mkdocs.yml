@@ -1,0 +1,7 @@
+site_name: Speech Emotion Recognition Tools
+nav:
+    - Home: index.md
+    - SER Models: classifier.md
+    - SER Pipeline: pipeline.md
+    - Configurations: config.md
+theme: readthedocs
