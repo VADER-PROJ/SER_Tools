@@ -12,7 +12,7 @@
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Speech Emotion Recognition Tools";
+        var mkdocs_page_name = "Home";
         var mkdocs_page_input_path = "index.md";
         var mkdocs_page_url = null;
       </script>
@@ -41,10 +41,8 @@
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
-                <li class="toctree-l1 current"><a class="reference internal current" href=".">Speech Emotion Recognition Tools</a>
+                <li class="toctree-l1 current"><a class="reference internal current" href=".">Home</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#configurations">Configurations</a>
-    </li>
     </ul>
                 </li>
               </ul>
@@ -54,6 +52,10 @@
               </ul>
               <ul>
                 <li class="toctree-l1"><a class="reference internal" href="pipeline/">SER Pipeline</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="config/">Configurations</a>
                 </li>
               </ul>
       </div>
@@ -70,7 +72,7 @@
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href="." class="icon icon-home" alt="Docs"></a> &raquo;</li>
-      <li>Speech Emotion Recognition Tools</li>
+      <li>Home</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -79,20 +81,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="python-tools-for-speech-emotion-recognition-ser">Python Tools for Speech Emotion Recognition (SER)</h1>
+                <h1 id="speech-emotion-recognition-ser-tools">Speech Emotion Recognition (SER) Tools</h1>
 <p>This repository contains the <strong>Speech Emotion Recognition (SER)</strong> tools developed during the development of Mário Silva's thesis. It includes SER machine learning models and an audio pipeline to process audio in online or offline time to be used for SER classifications.</p>
-<h2 id="configurations">Configurations</h2>
-<p>In addition to manually passing the parameters to both classes, there is also an option to pass a JSON configuration file. An example of this config is present in the file <code>config.json</code>:</p>
-<pre><code>"MODELS_DIR": "models" -&gt; Path for the directory where the machine learning models are stored
-"TRADITIONAL_SER": true -&gt; Type of SER model to utilize
-"STRATIFIED": true -&gt; Use SER models resulting from the stratification study
-"FORMAT": "float32" -&gt; Data type of the audio samples fed to the pipeline
-"SAMPLE_RATE": 16000 -&gt; Sample rate of the audio fed to the pipeline
-"NO_CHANNELS": 1 -&gt; Number of audio channels of the audio fed to the pipeline (1 for mono, 2 for stereo)
-"MIN_CONFIDENCE": 0.6 -&gt; Minimum confidence level for voice activity detection
-"MIN_DURATION": 1 -&gt; Minimum duration of speech segments to be classified (in seconds)
-"MAX_DURATION":  -&gt; Maximum duration of speech segments to be classified (in seconds)
-</code></pre>
               
             </div>
           </div><footer>
@@ -140,5 +130,5 @@
 
 <!--
 MkDocs version : 1.4.2
-Build Date UTC : 2023-04-13 19:26:07.882998+00:00
+Build Date UTC : 2023-04-13 19:30:18.051963+00:00
 -->
