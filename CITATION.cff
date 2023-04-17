@@ -1,9 +1,16 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite it as below."
+title: Speech Emotion Recognition Classifiers and Pipeline
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
 authors:
   - family-names: Silva
     given-names: Mário
-    orcid: https://orcid.org/0000-0002-2055-2334
-title: "Speech Emotion Recognition Classifiers and Pipeline"
-version: 0.1
-date-released: 2023-04-12
+    email: mariocsilva119@gmail.com
+    name-particle: Mário
+    orcid: 'https://orcid.org/0000-0002-2055-2334'
+repository-code: 'https://github.com/VADER-PROJ/SER_Tools'
+url: 'https://vader-proj.github.io/SER_Tools/'
+version: '0.1'
+date-released: '2023-04-12'
