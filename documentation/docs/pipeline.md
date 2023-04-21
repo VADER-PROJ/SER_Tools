@@ -9,7 +9,7 @@ The next step is converting the consumed binary data to an array of floats, and 
 
 The third step of the pipeline is to detect voiced speech of the previously consumed second of audio, using the **Silero Voice Activity Detection (VAD)** model (the minimum confidence level associated with the detection of voiced speech is one class parameter). 
 
-Finally, the pipeline consumes a second of audio, it stores the segment if there is enough confidence that it detected voice activity, if it does not pass the threshold and it has previously saved any audio segment, it feeds it to a SER model to predict the emotion in the segment (it also takes into account if the segment reaches the minimum or maximum duration parameters).
+Finally, the pipeline consumes a second of audio, it stores the segment if there is enough confidence that it detected voice activity, if it does not pass the threshold and it has previously saved any audio segment, it feeds it to a SER model to predict the emotion in the segment. It is also flexible in terms of duration for the detected segments, as it can be set in configurations the minimum and maximum duration a segment can have.
 
 ## Usage Examples
 

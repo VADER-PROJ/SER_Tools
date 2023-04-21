@@ -17,7 +17,7 @@ class SERPipeline:
         SAMPLE_RATE: int = 16000,
         NO_CHANNELS: int = 1,
         MIN_CONFIDENCE: float = 0.6,
-        MIN_DURATION: float = 1,
+        MIN_DURATION: float = 2,
         MAX_DURATION: float = 6,
     ) -> None:
         """
@@ -32,7 +32,7 @@ class SERPipeline:
             SAMPLE_RATE (int): Sample rate of audio (in Hz) (default: 16000).
             NO_CHANNELS (int): Number of audio channels (1 for mono, 2 for stereo) (default: 1).
             MIN_CONFIDENCE (float): Minimum confidence level for voice activity detection (default: 0.6).
-            MIN_DURATION (float): Minimum duration of speech segments (in seconds) (default: 1).
+            MIN_DURATION (float): Minimum duration of speech segments (in seconds) (default: 2).
             MAX_DURATION (float): Maximum duration of speech segments (in seconds) (default: 6).
         """
 
@@ -164,7 +164,7 @@ class SERPipeline:
 
         y = self.normalize_audio(y)
 
-        # Input audio chunk is too short
+        # Check if given input audio chunk is too short
 
         if self.SAMPLE_RATE / y.shape[0] > 31.25:
             if self.prev_end - self.prev_start >= self.MIN_DURATION:

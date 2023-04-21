@@ -8,7 +8,7 @@ The developed models are available through the `SERClassifier` class in the file
 
 This class has built-in methods that allow users to predict emotions from an audio file or directly from an audio vector. The audio must have **16000 Hz** frequency and be **mono** channel. The class also **preprocesses** the audio by **reducing the noise** and **trimming silence** at the beginning and end of the audio before extracting features for classification.
 
-The traditional model constitutes an AdaBoost with Random Forests as the base estimator and utilizes manually extracted audio features from the audio signals to make emotional predictions.
+The traditional model constitutes an Extreme Gradient Boosting (XGBoost) model and utilizes manually extracted audio features from the audio signals to make emotional predictions.
 
 The deep learning model utilizes transfer learning techniques, using a pre-trained ResNet-50 on the ImageNet dataset. This classifier utilizes the image of the audio spectrogram to make classifications.
 

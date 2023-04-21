@@ -86,7 +86,7 @@
                 <h1 id="ser-models">SER Models</h1>
 <p>The developed models are available through the <code>SERClassifier</code> class in the file <code>ser_classifier.py</code>. It allows choosing the model developed and trained on the IEMOCAP dataset using a <strong>traditional feature-based SER</strong> and another using a <strong>deep learning-based SER</strong> approach.</p>
 <p>This class has built-in methods that allow users to predict emotions from an audio file or directly from an audio vector. The audio must have <strong>16000 Hz</strong> frequency and be <strong>mono</strong> channel. The class also <strong>preprocesses</strong> the audio by <strong>reducing the noise</strong> and <strong>trimming silence</strong> at the beginning and end of the audio before extracting features for classification.</p>
-<p>The traditional model constitutes an AdaBoost with Random Forests as the base estimator and utilizes manually extracted audio features from the audio signals to make emotional predictions.</p>
+<p>The traditional model constitutes an Extreme Gradient Boosting (XGBoost) and utilizes manually extracted audio features from the audio signals to make emotional predictions.</p>
 <p>The deep learning model utilizes transfer learning techniques, using a pre-trained ResNet-50 on the ImageNet dataset. This classifier utilizes the image of the audio spectrogram to make classifications.</p>
 <p>Additionally, there is the <code>STRATIFIED</code> argument of the <code>SERClassifier</code> class, which allows selecting the usage of these models trained on limited data that achieved better results, based on a set of conditions that resulted from a study of the training dataset limitations.</p>
 <h2 id="usage-examples">Usage Examples</h2>

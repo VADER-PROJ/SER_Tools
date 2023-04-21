@@ -6,6 +6,6 @@
     "SAMPLE_RATE": 16000,
     "NO_CHANNELS": 1,
     "MIN_CONFIDENCE": 0.6,
-    "MIN_DURATION": 1,
+    "MIN_DURATION": 2,
     "MAX_DURATION": 6
 }
