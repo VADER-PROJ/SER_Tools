@@ -2,7 +2,7 @@ import json
 import torch
 import librosa
 import numpy as np
-from typing import Optional, Dict
+from typing import Optional, Dict, Union
 from ser_classifier import SERClassifier
 
 
@@ -12,6 +12,7 @@ class SERPipeline:
         config_file: str = None,
         MODELS_DIR: str = None,
         TRADITIONAL_SER: bool = True,
+        DEEP_LEARNING_SER=True,
         STRATIFIED: bool = False,
         FORMAT: str = "float32",
         SAMPLE_RATE: int = 16000,
@@ -19,6 +20,8 @@ class SERPipeline:
         MIN_CONFIDENCE: float = 0.6,
         MIN_DURATION: float = 1,
         MAX_DURATION: float = 6,
+        IS_FILE: bool = False,
+        RETURN_PROBABILITIES: bool = True,
     ) -> None:
         """
         Initializes an instance of SERPipeline.
@@ -26,7 +29,8 @@ class SERPipeline:
         Args:
             config_file (str): Path for the JSON configuration file.
             MODELS_DIR (float): Path for the directory where the machine learning models are stored
-            TRADITIONAL_SER (float): Type of SER model to utilize
+            TRADITIONAL_SER (float): Use the traditional classifier
+            DEEP_LEARNING_SER (float): Use the deep learning classifier
             STRATIFIED (float): Use SER models resulting of the stratification study
             FORMAT (str): Data type of audio samples (default: 'float32').
             SAMPLE_RATE (int): Sample rate of audio (in Hz) (default: 16000).
@@ -34,6 +38,8 @@ class SERPipeline:
             MIN_CONFIDENCE (float): Minimum confidence level for voice activity detection (default: 0.6).
             MIN_DURATION (float): Minimum duration of speech segments (in seconds) (default: 1).
             MAX_DURATION (float): Maximum duration of speech segments (in seconds) (default: 6).
+            IS_FILE (bool): Wether the audio consumed is from a file or not (default: False).
+            RETURN_PROBABILITIES (bool): Wether to return the predicted emotion probabilities (default: True).
         """
 
         # Use the parameters in a configurations file
@@ -42,6 +48,7 @@ class SERPipeline:
                 (
                     self.MODELS_DIR,
                     self.TRADITIONAL_SER,
+                    self.DEEP_LEARNING_SER,
                     self.STRATIFIED,
                     self.FORMAT,
                     self.SAMPLE_RATE,
@@ -49,11 +56,14 @@ class SERPipeline:
                     self.MIN_CONFIDENCE,
                     self.MIN_DURATION,
                     self.MAX_DURATION,
+                    self.IS_FILE,
+                    self.RETURN_PROBABILITIES
                 ) = json.load(f).values()
         else:
             (
                 self.MODELS_DIR,
                 self.TRADITIONAL_SER,
+                self.DEEP_LEARNING_SER,
                 self.STRATIFIED,
                 self.FORMAT,
                 self.SAMPLE_RATE,
@@ -61,9 +71,12 @@ class SERPipeline:
                 self.MIN_CONFIDENCE,
                 self.MIN_DURATION,
                 self.MAX_DURATION,
+                self.IS_FILE,
+                self.RETURN_PROBABILITIES
             ) = (
                 MODELS_DIR,
                 TRADITIONAL_SER,
+                DEEP_LEARNING_SER,
                 STRATIFIED,
                 FORMAT,
                 SAMPLE_RATE,
@@ -71,7 +84,14 @@ class SERPipeline:
                 MIN_CONFIDENCE,
                 MIN_DURATION,
                 MAX_DURATION,
+                IS_FILE,
+                RETURN_PROBABILITIES
             )
+
+        # In case both classifiers weren't selected,
+        # select the traditional model
+        if not self.TRADITIONAL_SER and not self.DEEP_LEARNING_SER:
+            traditional_ser = True
 
         # Initialize variables for segmentation
 
@@ -90,22 +110,27 @@ class SERPipeline:
             )
 
         self.classifier_model = SERClassifier(
-            MODELS_DIR=self.MODELS_DIR, TRADITIONAL_SER=self.TRADITIONAL_SER, STRATIFIED=self.STRATIFIED
+            MODELS_DIR=self.MODELS_DIR,
+            TRADITIONAL_SER=self.TRADITIONAL_SER,
+            DEEP_LEARNING_SER=self.DEEP_LEARNING_SER,
+            STRATIFIED=self.STRATIFIED
         )
 
-    def process_bytes(self, y: bytes) -> np.ndarray:
+    def process_bytes(self, y: Union[bytes, str]) -> np.ndarray:
         """
         Converts raw audio bytes to a numpy array.
 
         Args:
-            y (bytes): Raw audio data in bytes.
+            y (bytes or str): Raw audio data in bytes or file name with audio data.
 
         Returns:
             numpy.ndarray: Numpy array of audio data.
         """
+        # Read data from file
+        if self.IS_FILE:
+            y, self.SAMPLE_RATE = librosa.load(y, sr=16000)
 
         # Convert bytes to numpy array
-
         y = np.frombuffer(y, self.FORMAT)
         if self.FORMAT == "int32":
             abs_max = np.abs(y).max()
@@ -115,6 +140,7 @@ class SERPipeline:
             y = y.squeeze()
         elif self.FORMAT != "float32":
             y = y.astype("float32")
+            
         return y
 
     def normalize_audio(self, y: np.ndarray) -> np.ndarray:
@@ -164,12 +190,18 @@ class SERPipeline:
 
         y = self.normalize_audio(y)
 
+        if self.IS_FILE:
+            emotion_prob = self.classifier_model.predict(
+                    y, return_proba=self.RETURN_PROBABILITIES
+                )
+            return emotion_prob
+
         # Check if given input audio chunk is too short
 
         if self.SAMPLE_RATE / y.shape[0] > 31.25:
             if self.prev_end - self.prev_start >= self.MIN_DURATION:
                 emotion_prob = self.classifier_model.predict(
-                    self.current_y, is_file=False, return_proba=True
+                    self.current_y, return_proba=self.RETURN_PROBABILITIES
                 )
             (self.prev_start, self.prev_end, self.current_y) = (None, None, None)
             return emotion_prob
@@ -194,7 +226,7 @@ class SERPipeline:
 
                 if self.prev_end - self.prev_start >= self.MAX_DURATION:
                     emotion_prob = self.classifier_model.predict(
-                        self.current_y, is_file=False, return_proba=True
+                        self.current_y, return_proba=self.RETURN_PROBABILITIES
                     )
                     (self.prev_start, self.prev_end, self.current_y) = (
                         None,
@@ -209,10 +241,10 @@ class SERPipeline:
 
             if self.prev_end - self.prev_start >= self.MIN_DURATION:
                 emotion_prob = self.classifier_model.predict(
-                    self.current_y, is_file=False, return_proba=True
+                    self.current_y, return_proba=self.RETURN_PROBABILITIES
                 )
             (self.prev_start, self.prev_end, self.current_y) = (None, None, None)
 
         # Return emotion probabilities
-
+        
         return emotion_prob

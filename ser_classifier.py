@@ -2,6 +2,7 @@ import io
 import json
 import librosa
 import numpy as np
+import librosa.display
 import tensorflow as tf
 import noisereduce as nr
 import matplotlib.pyplot as plt
@@ -11,13 +12,13 @@ from typing import List, Union
 from scipy.stats import kurtosis
 from keras.utils import img_to_array
 
-
 class SERClassifier:
     def __init__(
         self,
         config_file: str = None,
         MODELS_DIR: str = None,
         TRADITIONAL_SER: bool = True,
+        DEEP_LEARNING_SER: bool = True,
         STRATIFIED: bool = False,
     ) -> None:
         """
@@ -27,30 +28,44 @@ class SERClassifier:
         Args:
             config_file (str): Path for the JSON configuration file.
             MODELS_DIR (str): The path for the directory where the machine learning models are stored.
-            TRADITIONAL_SER (bool): Select either the traditional model for classying audio,
-                                    if True, or the deep learning model, if False.
+            TRADITIONAL_SER (bool): Use the traditional model for classying audio.
+            DEEP_LEARNING_SER (bool): Use the deep learning model for classying audio.
             STRATIFIED (bool): Set to use the models resulting of the data stratification study.
         """
         if config_file:
             with open(config_file, "r") as f:
-                (MODELS_DIR, self.TRADITIONAL_SER, STRATIFIED,
+                (MODELS_DIR, self.TRADITIONAL_SER, self.DEEP_LEARNING_SER, STRATIFIED,
                  _, _, _, _, _, _) = json.load(f).values()
         else:
             self.TRADITIONAL_SER = TRADITIONAL_SER
+            self.DEEP_LEARNING_SER = DEEP_LEARNING_SER
+
+        self.STRATIFIED = STRATIFIED
 
         if not MODELS_DIR:
             raise Exception(
                 "Path for the machine learning models directory is required."
             )
 
+        self.models = {}
+        
         if self.TRADITIONAL_SER:
-            self.model = load(
-                f"{MODELS_DIR}/{'stratified_' if STRATIFIED else ''}traditional_model.pkl"
-            )
-        else:
-            self.model = tf.keras.models.load_model(
-                f"{MODELS_DIR}/{'stratified_' if STRATIFIED else ''}dl_model.h5"
-            )
+            self.models["traditional"] = load(
+                    f"{MODELS_DIR}/{'stratified_' if self.STRATIFIED else ''}traditional_model.pkl"
+                )
+
+        if self.DEEP_LEARNING_SER:
+            self.models["dl"] = tf.keras.models.load_model(
+                    f"{MODELS_DIR}/{'stratified_' if self.STRATIFIED else ''}dl_model.h5"
+                )
+        
+        # If no models were selected, use the traditional model
+
+        if not self.models:
+            self.models["traditional"] = load(
+                    f"{MODELS_DIR}/{'stratified_' if self.STRATIFIED else ''}traditional_model.pkl"
+                )
+        
 
     def spikes(self, data: np.ndarray) -> float:
         """
@@ -97,25 +112,19 @@ class SERClassifier:
         return y
 
     def extract_trad_features(
-        self, data: Union[str, np.ndarray], is_file: bool = True, sr: int = 16000
+        self, data: Union[str, np.ndarray], sr: int = 16000
     ) -> List:
         """
         Extract the SER traditional features from the given audio file or signal.
 
         Args:
             data (Union[str, np.ndarray]): Audio file name or signal.
-            is_file (bool): Whether the input data is a file name or signal.
             sr (int): Sampling rate of the audio signal.
 
         Returns:
             List: List of feature values.
         """
-        if is_file:
-            y, sr = librosa.load(data, sr=16000)
-        else:
-            y = data
-
-        y = self.preprocess_audio(y, sr)
+        y = self.preprocess_audio(data, sr)
 
         mfcc = librosa.feature.mfcc(y=y, sr=sr)
 
@@ -164,25 +173,19 @@ class SERClassifier:
         ).reshape(1, -1)
 
     def extract_dl_features(
-        self, data: Union[str, np.ndarray], is_file: bool = True, sr: int = 16000
+        self, data: Union[str, np.ndarray], sr: int = 16000
     ) -> List:
         """
         Extract the SER deep learning features from the given audio file or signal.
 
         Args:
             data (Union[str, np.ndarray]): Audio file path or signal.
-            is_file (bool): Whether the input data is a file name or signal.
             sr (int): Sampling rate of the audio signal.
 
         Returns:
             List: Spectrogram image array with (1, 224, 224, 3) shape.
         """
-        if is_file:
-            y, sr = librosa.load(data, sr=16000)
-        else:
-            y = data
-
-        y = self.preprocess_audio(y, sr)
+        y = self.preprocess_audio(data, sr)
 
         fig = plt.figure(dpi=100)
         ax = fig.add_subplot()
@@ -206,37 +209,43 @@ class SERClassifier:
         ).reshape((1, 224, 224, 3))
 
     def predict(
-        self, data: Union[str, np.ndarray], is_file: bool = True, return_proba=True
+        self, data: Union[str, np.ndarray], return_proba=True
     ):
         """
         Predicts the emotion label or probabilities for a given audio segment.
 
         Args:
             data (Union[str, np.ndarray]): Audio file path or a numpy array containing the audio segment.
-            is_file (bool): Whether the input data is a file name or signal.
             return_proba (bool): Whether to return the probabilities instead of the predicted label.
 
         Returns:
-            str or dict: The predicted emotion label (one of "neutral", "anger", "happiness", "sadness") if `return_proba` is False,
-            otherwise a dictionary containing the predicted probabilities for each emotion label.
+            dict: The predicted discrete emotion label (one of "neutral", "anger", "happiness", "sadness") if `return_proba` is False,
+            otherwise a dictionary containing the predicted probabilities for each emotion label, for each model used.
         """
+
+        emotions_detected = {}
+
         if self.TRADITIONAL_SER:
-            proba = self.model.predict_proba(
-                self.extract_trad_features(data, is_file=is_file)
-            )[0]
-        else:
-            proba = self.model.predict(
-                self.extract_dl_features(data, is_file=is_file), verbose=0
-            )[0]
+            emotions_detected[f"{'stratified ' if self.STRATIFIED else ''}traditional"] = self.models["traditional"].predict_proba(
+                    self.extract_trad_features(data)
+                )[0]
 
-        proba = {
-            "anger": proba[0],
-            "happiness": proba[1],
-            "sadness": proba[2],
-            "neutral": proba[3],
-        }
+        if self.DEEP_LEARNING_SER:
+            emotions_detected[f"{'stratified ' if self.STRATIFIED else ''}deep learning"] = self.models["dl"].predict(
+                    self.extract_dl_features(data), verbose=0
+                )[0]
 
-        if return_proba:
-            return proba
-        else:
-            return max(proba, key=proba.get)
+        for model, emotions in emotions_detected.items():
+            emotions_proba = {
+                "anger": emotions[0],
+                "happiness": emotions[1],
+                "sadness": emotions[2],
+                "neutral": emotions[3],
+            }
+
+            if not return_proba:
+                emotions_detected[model] = max(emotions_proba, key=emotions_proba.get)
+            else:
+                emotions_detected[model] = emotions_proba
+
+        return emotions_detected

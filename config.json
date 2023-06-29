@@ -1,11 +1,14 @@
 {
     "MODELS_DIR": "models",
     "TRADITIONAL_SER": true,
+    "DEEP_LEARNING_SER": true,
     "STRATIFIED": true,
     "FORMAT": "float32",
     "SAMPLE_RATE": 16000,
     "NO_CHANNELS": 1,
     "MIN_CONFIDENCE": 0.6,
-    "MIN_DURATION": 2,
-    "MAX_DURATION": 6
+    "MIN_DURATION": 1,
+    "MAX_DURATION": 8,
+    "IS_FILE": false,
+    "RETURN_PROBABILITIES": true
 }
